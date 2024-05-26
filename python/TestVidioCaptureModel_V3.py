@@ -4,6 +4,7 @@ from ultralytics import YOLO
 import torch
 import time
 import serial
+#pip install pyserial
 
 # ตรวจสอบว่ามี GPU หรือไม่
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -26,10 +27,11 @@ count_not_goodBottle = 0
 
 category_list = []
 
+
 serial_port = None
 # ------------------------------------------------------------------------------
 try:
-    serial_port = serial.Serial(port='COM3', baudrate=115200, timeout=.2)
+    serial_port = serial.Serial(port='COM11', baudrate=115200, timeout=.2)
 except:
     print("Serial port not found")
 # ------------------------------------------------------------------------------
