@@ -17,14 +17,15 @@ int stateMachine = 1;
 unsigned long previousKickTime = 0;
 bool isKicking = false;
 volatile unsigned long lastDebounceTimeMode = 0; // เวลาล่าสุดที่ debounce
-volatile unsigned long debounceDelayMode = 100; // เวลา debounce (milliseconds)
+volatile unsigned long debounceDelayMode = 300; // เวลา debounce (milliseconds)
 EasyButton sensorCapture(SENSOR_CAPTURE);
 void sendData();
 int readSensor();
 
 void SensorCaptureAvtive(){
-  // Serial.println("SensorCaptureAvtive pressed");
+  
   if ((millis() - lastDebounceTimeMode) > debounceDelayMode) {
+    Serial.println("SensorCaptureAvtive pressed");
     sensorAvtive = 1;
   }
   lastDebounceTimeMode = millis(); 
@@ -55,7 +56,7 @@ void loop() {
         flag = true; 
         digitalWrite(LED_LAMP, HIGH);
         while (flag) {
-          if (readSensor() == 1 && !isKicking) {
+          if (readSensor() == 0 && !isKicking) {
             previousKickTime = millis();
             isKicking = true;
           }

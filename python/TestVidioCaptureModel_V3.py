@@ -11,7 +11,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f"Using device: {device}")
 
 # โหลดโมเดล YOLO
-model_path = "../../model/best50x.pt"
+model_path = "best50x.pt"
 model = YOLO(model_path).to(device)
 model.fuse()
 
@@ -31,7 +31,7 @@ category_list = []
 serial_port = None
 # ------------------------------------------------------------------------------
 try:
-    serial_port = serial.Serial(port='COM11', baudrate=115200, timeout=.2)
+    serial_port = serial.Serial(port='COM3', baudrate=115200, timeout=.2)
 except:
     print("Serial port not found")
 # ------------------------------------------------------------------------------
@@ -70,7 +70,7 @@ def process_image(image_path, model):
             confidence = box.conf[0] #
             class_id = box.cls[0]
             category_name = categories.get(int(class_id), 'Unknown')
-            if confidence > 0.9:
+            if confidence > 0.7:
                 category_list.append(category_name)  # เพิ่ม current_category เข้าไปใน List
                 #----------------------------------------------------------
                 if category_name in ['Bottle-Ng Label','Bottle-Ng Level']:
@@ -161,7 +161,7 @@ def checkAndSendMcu(category_list):
         print("------------")
         send_data_to_mcu("NG")
 # เปิดการเชื่อมต่อกับกล้อง
-cap = cv2.VideoCapture(0)  # เลข 0 หมายถึงกล้องตัวแรกที่เชื่อมต่ออยู่
+cap = cv2.VideoCapture(1)  # เลข 0 หมายถึงกล้องตัวแรกที่เชื่อมต่ออยู่
 
 if not cap.isOpened():
     print("ไม่สามารถเปิดกล้องได้")
@@ -198,16 +198,18 @@ while True:
     elif serial_port !=None and serial_port.in_waiting > 0 :
         received_data = serial_port.readline().decode().strip()
         print(f"Received: {received_data}")
-        image_path = 'captured_image.jpg'
-        # บันทึกภาพเป็นไฟล์
-        cv2.imwrite(image_path, frame)
-        print("ถ่ายภาพสำเร็จและบันทึกเป็น 'captured_image.jpg'")
-        # ประมวลผลภาพด้วยโมเดลและได้รับภาพที่มีข้อมูลเพิ่มลงไป
-        processed_image = process_image(image_path, model)
-        # แสดงภาพที่ผ่านการประมวลผล
-        cv2.imshow('Camera', processed_image)
-        # รอ 1 วินาที
-        cv2.waitKey(2000)
+        if received_data == "CAPTURE":
+            image_path = 'captured_image.jpg'
+            # บันทึกภาพเป็นไฟล์
+            cv2.imwrite(image_path, frame)
+            print("ถ่ายภาพสำเร็จและบันทึกเป็น 'captured_image.jpg'")
+            # ประมวลผลภาพด้วยโมเดลและได้รับภาพที่มีข้อมูลเพิ่มลงไป
+            processed_image = process_image(image_path, model)
+            # แสดงภาพที่ผ่านการประมวลผล
+            cv2.imshow('Camera', processed_image)
+            # รอ 1 วินาที
+            received_data = ""
+            cv2.waitKey(2000)
     # ถ้ากด 'Q' ให้ปิดโปรแกรม
     elif key == ord('q') or key == ord('Q'):
         print("ปิดโปรแกรม")
